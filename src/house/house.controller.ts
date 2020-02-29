@@ -65,4 +65,15 @@ export class HouseController {
         this.logger.verbose(`User ${user.id} is removing user ${userId} from house ${id} as member`);
         return this.houseService.removeMember(id, userId);
     }
+
+    @Post(`/:id/admins/:userId`)
+    @Roles(Role.admin)
+    @UseGuards(RolesGuard)
+    async makeAdmin(
+        @Param('id', ParseIntPipe) id: number,
+        @Param('userId', ParseIntPipe) userId: number,
+    ) {
+        this.logger.log(`makeAdmin called with ${id}, ${userId}`);
+        return this.houseService.makeAdmin(id, userId);
+    }
 }
