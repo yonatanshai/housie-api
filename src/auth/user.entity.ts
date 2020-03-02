@@ -1,6 +1,7 @@
 import { BaseEntity, PrimaryGeneratedColumn, Column, Entity, Unique, OneToMany, ManyToMany, ManyToOne, JoinTable } from "typeorm";
 import * as bcrypt from 'bcryptjs';
-import { House } from "src/house/house.entity";
+// import { House } from "src/house/house.entity";
+import {House} from '../house/house.entity';
 
 @Entity()
 @Unique(['email'])

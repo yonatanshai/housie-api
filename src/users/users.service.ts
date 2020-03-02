@@ -1,7 +1,7 @@
 import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { UserRepository } from 'src/auth/user.repository';
-import { User } from 'src/auth/user.entity';
+import {UserRepository} from '../auth/user.repository';
+import {User} from '../auth/user.entity';
 import { QueryBuilder } from 'typeorm';
 
 @Injectable()

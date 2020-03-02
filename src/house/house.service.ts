@@ -2,9 +2,11 @@ import { Injectable, NotFoundException, InternalServerErrorException, Logger } f
 import { InjectRepository } from '@nestjs/typeorm';
 import { HouseRepository } from './house.repository';
 import { CreateHouseDto } from './create-house.dto';
-import { User } from 'src/auth/user.entity';
+// import { User } from 'src/auth/user.entity';
+import { User } from '../auth/user.entity';
 import { House } from './house.entity';
-import { UsersService } from 'src/users/users.service';
+// import { UsersService } from 'src/users/users.service';
+import {UsersService } from '../users/users.service';
 
 @Injectable()
 export class HouseService {
@@ -13,7 +15,7 @@ export class HouseService {
         @InjectRepository(HouseRepository)
         private houseRepository: HouseRepository,
         private usersService: UsersService
-    ) {}
+    ) { }
 
     async createHouse(createHouseDto: CreateHouseDto, user: User): Promise<House> {
         return this.houseRepository.createHouse(createHouseDto, user);

@@ -1,15 +1,15 @@
 import { Test, TestingModule } from '@nestjs/testing';
-import { AuthController } from './auth.controller';
+import { TasksController } from './tasks.controller';
 
-describe('Auth Controller', () => {
-  let controller: AuthController;
+describe('Tasks Controller', () => {
+  let controller: TasksController;
 
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
-      controllers: [AuthController],
+      controllers: [TasksController],
     }).compile();
 
-    controller = module.get<AuthController>(AuthController);
+    controller = module.get<TasksController>(TasksController);
   });
 
   it('should be defined', () => {

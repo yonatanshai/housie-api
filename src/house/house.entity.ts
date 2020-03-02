@@ -1,5 +1,6 @@
 import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, CreateDateColumn, OneToMany, JoinTable } from "typeorm";
-import { User } from "src/auth/user.entity";
+// import { User } from "src/auth/user.entity";
+import {User} from '../auth/user.entity'
 
 @Entity()
 export class House extends BaseEntity {
