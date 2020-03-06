@@ -8,6 +8,8 @@ import { House } from './house.entity';
 import { Roles } from 'src/auth/guards/roles.decorator';
 import { RolesGuard } from 'src/auth/guards/roles.guard';
 import { Role } from 'src/auth/guards/roles.enum';
+import { Reflector } from '@nestjs/core';
+import { HouseRepository } from './house.repository';
 
 
 @Controller('house')
@@ -34,19 +36,15 @@ export class HouseController {
         return this.houseService.getMyHouses(user);
     }
 
-    @Get('/:id')
-    @Roles(Role.member)
-    @UseGuards(RolesGuard)
-    getHouseById(@Param('id', ParseIntPipe) id: number, @GetUser() user: User): Promise<House> {
+    @Get('/:houseId')
+    getHouseById(@Param('houseId', ParseIntPipe) id: number, @GetUser() user: User): Promise<House> {
         this.logger.verbose(`User ${user.id} trying to get house with id ${id}`);
         return this.houseService.getHouseById(id, user);
     }
 
-    @Post('/:id/members/:userId')
-    @Roles(Role.admin)
-    @UseGuards(RolesGuard)
+    @Post('/:houseId/members/:userId')
     async addMember(
-        @Param('id', ParseIntPipe) id: number,
+        @Param('houseId', ParseIntPipe) id: number,
         @Param('userId', ParseIntPipe) userId: number,
         @GetUser() user: User
     ) {
@@ -54,26 +52,24 @@ export class HouseController {
         return this.houseService.addMember(id, userId, user);
     }
 
-    @Delete('/:id/members/:userId')
-    @Roles(Role.admin)
-    @UseGuards(RolesGuard)
+
+    @Delete('/:houseId/members/:userId')
     async removeMember(
-        @Param('id', ParseIntPipe) id: number,
+        @Param('houseId', ParseIntPipe) id: number,
         @Param('userId', ParseIntPipe) userId: number,
         @GetUser() user: User
     ) {
         this.logger.verbose(`User ${user.id} is removing user ${userId} from house ${id} as member`);
-        return this.houseService.removeMember(id, userId);
+        return this.houseService.removeMember(id, user,  userId);
     }
 
-    @Post(`/:id/admins/:userId`)
-    @Roles(Role.admin)
-    @UseGuards(RolesGuard)
+    @Post(`/:houseId/admins/:userId`)
     async makeAdmin(
-        @Param('id', ParseIntPipe) id: number,
+        @Param('houseId', ParseIntPipe) id: number,
+        @GetUser() user: User,
         @Param('userId', ParseIntPipe) userId: number,
     ) {
         this.logger.log(`makeAdmin called with ${id}, ${userId}`);
-        return this.houseService.makeAdmin(id, userId);
+        return this.houseService.makeAdmin(id, user, userId);
     }
 }

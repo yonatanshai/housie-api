@@ -3,6 +3,8 @@ import { Reflector } from "@nestjs/core";
 import { HouseService } from "src/house/house.service";
 import { InjectRepository } from "@nestjs/typeorm";
 import { Role } from "./roles.enum";
+import { House } from "src/house/house.entity";
+import { User } from "../user.entity";
 
 @Injectable()
 export class RolesGuard implements CanActivate {
@@ -13,7 +15,7 @@ export class RolesGuard implements CanActivate {
     ) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        
+        this.logger.log('canActivateCalled')
         const roles = this.reflector.get<string[]>('roles', context.getHandler());
         this.logger.log(`canActivate called with roles: ${roles}`);
         if (!roles) {
@@ -21,27 +23,39 @@ export class RolesGuard implements CanActivate {
         }
 
         const request = context.switchToHttp().getRequest();
-        const user = request.user;
+        const user: User = request.user;
 
-        const houseId = request.params.houseId ? request.params.houseId : request.body.houseId;
-        
+        this.logger.verbose(`user from request is ${JSON.stringify(user, null, 4)}`);
+
+
+        let houseId = request.params.houseId;
         if (!houseId) {
-            this.logger.error('Missing houseId in both params and body');
-            throw new InternalServerErrorException();
+            houseId = request.body.houseId;
         }
 
-        const house = await this.houseService.getHouseById(houseId, user);
-
-        if (!house) {
-            throw new NotFoundException();
-        }
+        
 
         if (roles.includes(Role.admin)) {
-            return house.admins.some(a => a.id === user.id);
+            if (houseId) {
+                const house = user.houses.find(h => h.id === houseId);
+                if (!house) {
+                    return false;
+                }
+
+                return house.admins.some(a => a.id === user.id);
+            }
+
+            const isAdmin = user.houses.some(h => h.admins.some(a => a.id === user.id));
+            this.logger.log(`isAdmin: ${isAdmin}`);
+            return isAdmin;
         } else if (roles.includes(Role.member)) {
-            return house.members.some(m => m.id === user.id);
+            // return house.members.some(m => m.id === user.id);
+            const isMember = user.houses.some(h => h.members.some(m => m.id === user.id));
+            this.logger.log(`isMember: ${isMember}`);
+            return isMember;
         }
 
         return true;
     }
+    
 }

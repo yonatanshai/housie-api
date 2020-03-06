@@ -15,6 +15,7 @@ import { UsersService } from 'src/users/users.service';
     UsersModule
   ],
   providers: [HouseService],
-  controllers: [HouseController]
+  controllers: [HouseController],
+  exports: [HouseService]
 })
 export class HouseModule {}

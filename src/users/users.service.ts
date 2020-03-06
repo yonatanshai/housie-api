@@ -11,7 +11,7 @@ export class UsersService {
         private userRepository: UserRepository
     ) { }
 
-    async getUserById(id: number): Promise<User> {
-        return this.userRepository.getUserById(id);
+    async getUserById(id: number, relations: string[]): Promise<User> {
+        return this.userRepository.getUserById(id, relations);
     }
 }

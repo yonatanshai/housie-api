@@ -1,6 +1,7 @@
 import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMany, CreateDateColumn, OneToMany, JoinTable } from "typeorm";
-// import { User } from "src/auth/user.entity";
-import {User} from '../auth/user.entity'
+import { Task } from '../tasks/task.entity';
+import { User } from '../auth/user.entity'
+
 
 @Entity()
 export class House extends BaseEntity {
@@ -14,13 +15,16 @@ export class House extends BaseEntity {
     @JoinTable()
     members: User[];
 
-    @ManyToMany(type => User, user => user.adminHouses, { eager: true })
+    @ManyToMany(type => User, user => user.adminHouses, {eager: true})
     @JoinTable()
     admins: User[];
+
+    @OneToMany(type => Task, task => task.house)
+    tasks: Task[];
 
     @Column({ name: 'creator' })
     creatorId: number;
 
-    @CreateDateColumn()
-    createdAt: number
+    @CreateDateColumn({ type: 'timestamp' })
+    createdAt: string
 }

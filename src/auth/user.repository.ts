@@ -8,8 +8,8 @@ import * as bcrypt from 'bcryptjs';
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
 
-    async getUserById(id: number): Promise<User> {
-        const user = await this.findOne(id, {relations: ['houses']})
+    async getUserById(id: number, relations?: string[]): Promise<User> {
+        const user = await this.findOne(id, {relations: [...relations, 'houses']})
 
         if (!user) {
             throw new NotFoundException();
@@ -44,7 +44,7 @@ export class UserRepository extends Repository<User> {
         const { email, password } = signinCredentialsDto;
 
         // Select all data that is needed both for jwt and for password matching. By default password is not returned
-        const user = await this.findOne({ select: ['id', 'username', 'email', 'password'], where: { email } });
+        const user = await this.findOne({ select: ['id', 'username', 'email', 'password'], where: { email }, relations: ['houses'] });
 
         if (user && await user.validatePassword(password)) {
             delete user.password;
