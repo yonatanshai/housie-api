@@ -7,6 +7,7 @@ import { User } from '../auth/user.entity';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { House } from 'src/house/house.entity';
 import { TaskStatus } from './task-status.enum';
+import { UpdateTaskDto } from './dto/update-task.dto';
 
 @Injectable()
 export class TasksService {
@@ -66,6 +67,10 @@ export class TasksService {
         }
 
         return task;
+    }
+
+    async updateTask(taskId: number, updateTaskDto: UpdateTaskDto, user: User) {
+        return this.taskRepository.updateTask(taskId, updateTaskDto, user);
     }
 
     async assignTask(taskId: number, user: User, assigneeId: number): Promise<Task> {
