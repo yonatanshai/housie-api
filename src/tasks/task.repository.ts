@@ -8,10 +8,19 @@ import { TaskStatus } from './task-status.enum';
 import { TaskPriority } from './task-priority.enum';
 import { json } from 'express';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { GetTaskFilterDto } from './dto/get-task-filter.dto';
 
 @EntityRepository(Task)
 export class TaskRepository extends Repository<Task> {
     private logger = new Logger('TaskRepository');
+
+    // async getTask(filterDto: GetTaskFilterDto, user: User) {
+    //     const { search, status } = filterDto;
+
+    //     const query = this.createQueryBuilder('tasks');
+
+    //     query.where(``)
+    // }
 
     async createTask(createTaskDto: CreateTaskDto, house: House, assignedUser: User, creator: User) {
         const { title, description, priority } = createTaskDto;
@@ -48,7 +57,7 @@ export class TaskRepository extends Repository<Task> {
 
         let task: Task;
         try {
-            task = await this.findOne({ id: taskId }, {relations: ['house']});    
+            task = await this.findOne({ id: taskId }, { relations: ['house'] });
         } catch (error) {
             this.logger.error(`updateTask: error getting task with id ${taskId} from db`, error.stack);
             throw new InternalServerErrorException();
@@ -63,7 +72,7 @@ export class TaskRepository extends Repository<Task> {
             this.logger.error(`updateTask: User with id ${user.id} is not task owner and not house admin`);
             throw new UnauthorizedException();
         }
-        
+
         if (description) {
             task.description = description;
         }

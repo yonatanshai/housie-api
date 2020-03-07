@@ -25,6 +25,7 @@ export class UserRepository extends Repository<User> {
         user.username = username;
         user.email = email;
         user.houses = [];
+        user.expenses = [];
         user.password = await this.hashPassword(password);
 
         try {

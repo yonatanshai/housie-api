@@ -19,6 +19,7 @@ export class HouseRepository extends Repository<House> {
         house.name = name;
         house.members = [user];
         house.admins = [user];
+        house.expenses = [];
         house.creatorId = user.id;
 
         await this.saveHouse(house);
