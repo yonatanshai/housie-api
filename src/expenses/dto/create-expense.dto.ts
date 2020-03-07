@@ -10,5 +10,6 @@ export class CreateExpenseDto {
     @IsPositive()
     amount: number;
 
+    @IsNotEmpty()
     houseId: number;
 }

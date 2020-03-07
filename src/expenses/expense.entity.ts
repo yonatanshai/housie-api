@@ -1,4 +1,4 @@
-import { BaseEntity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Entity } from "typeorm";
+import { BaseEntity, PrimaryGeneratedColumn, Column, ManyToOne, CreateDateColumn, Entity, UpdateDateColumn } from "typeorm";
 import { User } from "src/auth/user.entity";
 import { House } from "src/house/house.entity";
 
@@ -24,6 +24,9 @@ export class Expense extends BaseEntity {
 
     @CreateDateColumn()
     createdAt: Date;
+
+    @UpdateDateColumn()
+    updatedAt: Date;
 
     @ManyToOne(type => House, house => house.expenses)
     house: House;

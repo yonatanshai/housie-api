@@ -1,10 +1,11 @@
-import { Controller, UseGuards, Logger, Get, Post, Body, ValidationPipe, Param, ParseIntPipe } from '@nestjs/common';
+import { Controller, UseGuards, Logger, Get, Post, Body, ValidationPipe, Param, ParseIntPipe, Patch, Delete } from '@nestjs/common';
 import { ExpensesService } from './expenses.service';
 import { AuthGuard } from '@nestjs/passport';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { GetUser } from 'src/auth/get-user.decorator';
 import { User } from 'src/auth/user.entity';
 import { Expense } from './expense.entity';
+import { UpdateExpenseDto } from './dto/update-expense.dto';
 
 @Controller('expenses')
 @UseGuards(AuthGuard())
@@ -39,4 +40,22 @@ export class ExpensesController {
 
         return this.expenseService.createExpense(createExpenseDto, user);
     }
+
+    @Patch('/:id')
+    async updateExpense(
+        @Param('id') id: number,
+        @Body(ValidationPipe) updateExpenseDto: UpdateExpenseDto,
+        @GetUser() user: User
+    ) {
+        return this.expenseService.updateExpense(id, updateExpenseDto, user);
+    }
+
+    @Delete('/:id')
+    async deleteExpense(
+        @Param('id') id: number,
+        @GetUser() user: User
+    ) {
+        return this.expenseService.deleteExpense(id, user);
+    } 
+
 }

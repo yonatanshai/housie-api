@@ -4,6 +4,7 @@ import { Logger, InternalServerErrorException, NotFoundException } from "@nestjs
 import { CreateExpenseDto } from "./dto/create-expense.dto";
 import { User } from "src/auth/user.entity";
 import { House } from "src/house/house.entity";
+import { UpdateExpenseDto } from "./dto/update-expense.dto";
 
 @EntityRepository(Expense)
 export class ExpenseRepository extends Repository<Expense> {
@@ -72,5 +73,27 @@ export class ExpenseRepository extends Repository<Expense> {
         return expense;
     }
 
+    async updateExpense(id: number, updateExpenseDto: UpdateExpenseDto, user: User) {
+        this.logger.verbose(`updateExpense: called by user with id ${user.id} with dto ${JSON.stringify(updateExpenseDto, null, 4)}`);
+        const {amount, description} = updateExpenseDto;
+        let expense = await this.getExpenseById(id);
 
+        if (amount) {
+            expense.amount = amount;
+        }
+
+        if (description) {
+            expense.description = description
+        }
+
+        try {
+            await expense.save();
+        } catch (error) {
+            this.logger.error(`updateExpense: error save expense with id ${id} to db`, error.stack);
+            throw new InternalServerErrorException();
+        }
+
+        this.logger.log(`updateExpense: expense with id ${id} updated`);
+        return expense;
+    }
 }

@@ -9,7 +9,7 @@ import * as bcrypt from 'bcryptjs';
 export class UserRepository extends Repository<User> {
 
     async getUserById(id: number, relations?: string[]): Promise<User> {
-        const user = await this.findOne(id, {relations: [...relations, 'houses']})
+        const user = await this.findOne(id, {relations: ['houses']})
 
         if (!user) {
             throw new NotFoundException();
