@@ -1,4 +1,4 @@
-import { Controller, Logger, Post, UseGuards, Body, Get, Param, Patch } from '@nestjs/common';
+import { Controller, Logger, Post, UseGuards, Body, Get, Param, Patch, ParseIntPipe } from '@nestjs/common';
 import { TasksService } from './tasks.service';
 import { Role } from '../auth/guards/roles.enum';
 import { Task } from './task.entity';
@@ -8,6 +8,8 @@ import { AuthGuard } from '@nestjs/passport';
 import { CreateTaskDto } from './dto/create-task.dto';
 import { GetUser } from '../auth/get-user.decorator';
 import { User } from '../auth/user.entity';
+import { TaskStatus } from './task-status.enum';
+import { TaskStatusValidationPipe } from './pipes/task-status-validation.pipe';
 
 
 @Controller('tasks')
@@ -33,11 +35,21 @@ export class TasksController {
         return this.tasksService.createTask(createTaskDto, user);
     }
 
-    @Patch('/:taskId/:userId')
+    @Patch('/:taskId/user')
     async assignTask(
         @Param('taskId') taskId: number,
-        @Param('userId') assigneeId: number,
+        @Body('userId') assigneeId: number,
         @GetUser() user: User): Promise<Task> {
         return this.tasksService.assignTask(taskId, user, assigneeId);
+    }
+
+    @Patch('/:taskId/status')
+    async updateTaskStatus(
+        @Param('taskId') taskId: number,
+        @Body('status', TaskStatusValidationPipe) status: TaskStatus,
+        @GetUser() user: User
+    ): Promise<Task> {
+        this.logger.log(`updateTaskStatus called`);
+        return this.tasksService.updateTaskStatus(taskId, status, user);
     }
 }

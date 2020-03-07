@@ -48,7 +48,7 @@ export class TasksService {
 
         let task: Task;
         try {
-            task = await this.taskRepository.findOne(taskId, {relations: ['house']});
+            task = await this.taskRepository.findOne(taskId, { relations: ['house'] });
         } catch (error) {
             this.logger.error(`error getting task from db ${error.message}`, error.stack);
             throw new InternalServerErrorException();
@@ -59,7 +59,7 @@ export class TasksService {
             throw new NotFoundException();
         }
 
-        const isMember = await this.houseService.isMember(task.houseId, user, { useId: true });
+        const isMember = await this.houseService.isMember(task.house, user);
 
         if (!isMember) {
             throw new NotFoundException();
@@ -92,30 +92,12 @@ export class TasksService {
             throw new BadRequestException('Task already assigned to this user');
         }
 
-        
-
         task.user = assignee;
         task.userId = assignee.id;
         task.assignedAt = new Date();
         task.status = TaskStatus.Assigned;
+
         assignee.tasks.push(task);
-
-
-        // console.log('task##################');
-        // console.log(task);
-
-        // console.log('user##################');
-        // console.log(user);
-
-        // console.log('#assignee#############');
-        // console.log(assignee);
-
-        // try {
-        //     await user.save();
-        // } catch (error) {
-        //     this.logger.error(`assignTask: error saving user with id ${user.id}`, error.stack);
-        //     throw new InternalServerErrorException();
-        // }
 
         try {
             await task.save();
@@ -134,9 +116,44 @@ export class TasksService {
         delete task.house;
         delete task.user;
 
+        this.logger.log(`Task with id ${task.id} assigned to user with id ${assignee.id}`);
 
         return task;
     }
+
+    async updateTaskStatus(taskId: number, status: TaskStatus, user: User): Promise<Task> {
+        this.logger.log(`updateTaskStatus called for task with id ${taskId} by user with id ${user.id} and status ${status}`);
+        const task = await this.getTaskById(taskId, user);
+
+        const isAdmin = await this.houseService.isAdmin(task.house, user);
+
+        if (task.userId !== user.id && !isAdmin) {
+            throw new UnauthorizedException();
+        }
+
+        task.status = status;
+
+        if (status === TaskStatus.Completed) {
+            task.completedAt = new Date();
+        } else {
+            if (task.completedAt) {
+                task.completedAt = null;
+            }
+        }
+
+        try {
+            task.save();
+        } catch (error) {
+            throw new InternalServerErrorException();
+        }
+
+        this.logger.log(`updateTaskStatus: status updated`);
+
+        return task;
+    }
+
+
+    
 
     public async getHouse(houseId: number, user: User): Promise<House> {
         let house: House;
