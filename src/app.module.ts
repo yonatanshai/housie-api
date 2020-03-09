@@ -6,10 +6,11 @@ import { HouseModule } from './house/house.module';
 import { UsersModule } from './users/users.module';
 import { TasksModule } from './tasks/tasks.module';
 import { ExpensesModule } from './expenses/expenses.module';
+import { ShoppingListsModule } from './shopping-lists/shopping-lists.module';
 
 
 @Module({
-  imports: [TypeOrmModule.forRoot(typeOrmConfig), AuthModule, HouseModule, UsersModule, TasksModule, ExpensesModule],
+  imports: [TypeOrmModule.forRoot(typeOrmConfig), AuthModule, HouseModule, UsersModule, TasksModule, ExpensesModule, ShoppingListsModule],
   
 })
 export class AppModule {}

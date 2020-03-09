@@ -2,6 +2,7 @@ import { BaseEntity, Entity, PrimaryGeneratedColumn, Column, ManyToOne, ManyToMa
 import { Task } from '../tasks/task.entity';
 import { User } from '../auth/user.entity'
 import { Expense } from "src/expenses/expense.entity";
+import { ShoppingList } from "src/shopping-lists/shopping-list.entity";
 
 
 @Entity()
@@ -25,6 +26,9 @@ export class House extends BaseEntity {
 
     @OneToMany(type => Expense, expense => expense.house)
     expenses: Expense[];
+
+    @OneToMany(type => ShoppingList, list => list.house)
+    shoppingLists: ShoppingList[]
 
     @Column({ name: 'creator' })
     creatorId: number;
