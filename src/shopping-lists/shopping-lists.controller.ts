@@ -8,6 +8,7 @@ import { AuthGuard } from '@nestjs/passport';
 import { CreateListItemDto } from './shopping-list-item/create-list-item.dto';
 import { UpdateListDto } from './dto/update-list.dto';
 import { GetListFilterDto } from './dto/get-list-filter.dto';
+import { UpdateShoppingListItemDto } from './shopping-list-item/update-list-item.dto';
 
 @UseGuards(AuthGuard())
 @Controller('shopping-lists')
@@ -65,6 +66,16 @@ export class ShoppingListsController {
         @GetUser() user: User
     ): Promise<ShoppingList> {
         return this.shoppingListsService.updateList(listId, updateListDto, user);
+    }
+
+    @Patch('/:listId/items/:itemId')
+    async updateListItem(
+        @Body(ValidationPipe) updateShoppingListItemDto: UpdateShoppingListItemDto,
+        @Param('listId', ParseIntPipe) listId: number,
+        @Param('itemId', ParseIntPipe) itemId: number,
+        @GetUser() user: User
+    ) {
+        return this.shoppingListsService.updateListItem(updateShoppingListItemDto, itemId, listId, user);
     }
 
 

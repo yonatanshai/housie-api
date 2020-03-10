@@ -11,6 +11,7 @@ import { ShoppingListItem } from './shopping-list-item/shopping-list-item.entity
 import { UpdateListDto } from './dto/update-list.dto';
 import { ExpensesService } from 'src/expenses/expenses.service';
 import { GetListFilterDto } from './dto/get-list-filter.dto';
+import { UpdateShoppingListItemDto } from './shopping-list-item/update-list-item.dto'
 
 @Injectable()
 export class ShoppingListsService {
@@ -39,7 +40,7 @@ export class ShoppingListsService {
             throw new NotFoundException();
         }
 
-        return this.shoppingListRepository.getList(getListFilterDto);            
+        return this.shoppingListRepository.getList(getListFilterDto);
     }
 
     async getListById(listId: number, user: User): Promise<ShoppingList> {
@@ -94,6 +95,23 @@ export class ShoppingListsService {
         if (!item) {
             this.logger.error(`getListItemById: item with id ${itemId} not found`);
             throw new NotFoundException();
+        }
+
+        return item;
+    }
+
+    async updateListItem(updateShoppingListItemDto: UpdateShoppingListItemDto, itemId: number, listId: number, user: User): Promise<ShoppingListItem> {
+        const { name } = updateShoppingListItemDto;
+        const item = await this.getListItemById(itemId, listId, user);
+
+        if (name) {
+            item.name = name;
+        }
+
+        try {
+            await item.save()
+        } catch (error) {
+            throw new InternalServerErrorException();
         }
 
         return item;
