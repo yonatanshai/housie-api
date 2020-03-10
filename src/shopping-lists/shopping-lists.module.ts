@@ -6,12 +6,14 @@ import { ShoppingListRepository } from './shopping-list.repository';
 import { ShoppingListItemRepository } from './shopping-list-item/shopping-list-item.repository';
 import { AuthModule } from 'src/auth/auth.module';
 import { HouseModule } from 'src/house/house.module';
+import { ExpensesModule } from 'src/expenses/expenses.module';
 
 @Module({
   imports: [
     TypeOrmModule.forFeature([ShoppingListRepository, ShoppingListItemRepository]),
     AuthModule,
-    HouseModule
+    HouseModule,
+    ExpensesModule
   ],
   providers: [ShoppingListsService],
   controllers: [ShoppingListsController]

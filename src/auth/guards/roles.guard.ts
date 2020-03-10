@@ -15,7 +15,6 @@ export class RolesGuard implements CanActivate {
     ) { }
 
     async canActivate(context: ExecutionContext): Promise<boolean> {
-        this.logger.log('canActivateCalled')
         const roles = this.reflector.get<string[]>('roles', context.getHandler());
         this.logger.log(`canActivate called with roles: ${roles}`);
         if (!roles) {

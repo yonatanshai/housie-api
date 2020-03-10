@@ -14,6 +14,7 @@ import { HouseModule } from 'src/house/house.module';
     HouseModule
   ],
   providers: [ExpensesService],
-  controllers: [ExpensesController]
+  controllers: [ExpensesController],
+  exports: [ExpensesService]
 })
 export class ExpensesModule {}

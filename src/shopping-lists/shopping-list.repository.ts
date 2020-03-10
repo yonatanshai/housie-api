@@ -1,8 +1,9 @@
 import { EntityRepository, Repository } from "typeorm";
 import { ShoppingList } from "./shopping-list.entity";
-import { Logger, InternalServerErrorException } from "@nestjs/common";
+import { Logger, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { CreateListDto } from "./dto/create-list.dto";
 import { User } from "src/auth/user.entity";
+import { GetListFilterDto } from "./dto/get-list-filter.dto";
 
 @EntityRepository(ShoppingList)
 export class ShoppingListRepository extends Repository<ShoppingList> {
@@ -19,7 +20,7 @@ export class ShoppingListRepository extends Repository<ShoppingList> {
         list.items = [];
         list.name = name;
         list.creatorId = user.id;
-        
+
         try {
             await list.save();
         } catch (error) {
@@ -30,5 +31,25 @@ export class ShoppingListRepository extends Repository<ShoppingList> {
         this.logger.log(`createList: list created with id ${list.id}`);
 
         return list;
+    }
+
+    async getList(getListFilterDto: GetListFilterDto): Promise<ShoppingList[]> {
+        const { isActive, houseId } = getListFilterDto;
+
+        let lists: ShoppingList[];
+        try {
+            lists = await this.find({
+                houseId,
+                isActive,
+            });    
+        } catch (error) {
+            throw new InternalServerErrorException();
+        }
+
+        if (!lists) {
+            throw new NotFoundException();
+        }
+
+        return lists;
     }
 }

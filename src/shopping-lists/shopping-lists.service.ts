@@ -8,6 +8,9 @@ import { ShoppingList } from './shopping-list.entity';
 import { HouseService } from 'src/house/house.service';
 import { CreateListItemDto } from './shopping-list-item/create-list-item.dto';
 import { ShoppingListItem } from './shopping-list-item/shopping-list-item.entity';
+import { UpdateListDto } from './dto/update-list.dto';
+import { ExpensesService } from 'src/expenses/expenses.service';
+import { GetListFilterDto } from './dto/get-list-filter.dto';
 
 @Injectable()
 export class ShoppingListsService {
@@ -19,7 +22,8 @@ export class ShoppingListsService {
         @InjectRepository(ShoppingListItemRepository)
         private listItemRepository: ShoppingListItemRepository,
 
-        private houseService: HouseService
+        private houseService: HouseService,
+        private expensesService: ExpensesService
     ) { }
 
     async createList(createListDto: CreateListDto, user: User): Promise<ShoppingList> {
@@ -28,6 +32,14 @@ export class ShoppingListsService {
         }
 
         return this.shoppingListRepository.createList(createListDto, user);
+    }
+
+    async getLists(getListFilterDto: GetListFilterDto, user): Promise<ShoppingList[]> {
+        if (!this.houseService.isMember(getListFilterDto.houseId, user, { useId: true })) {
+            throw new NotFoundException();
+        }
+
+        return this.shoppingListRepository.getList(getListFilterDto);            
     }
 
     async getListById(listId: number, user: User): Promise<ShoppingList> {
@@ -87,8 +99,68 @@ export class ShoppingListsService {
         return item;
     }
 
+    async updateList(listId: number, updateListDto: UpdateListDto, user: User) {
+        const { isActive, name, updateExpenses, totalAmount } = updateListDto;
+        const list = await this.getListById(listId, user);
+        const originalName = list.name;
+
+        if (!await this.houseService.isAdmin(list.house, user)) {
+            throw new UnauthorizedException();
+        }
+
+        if (name) {
+            list.name = name;
+        }
+
+        if (totalAmount) {
+            list.totalAmount = totalAmount;
+        }
+
+        list.isActive = isActive;
+
+        if (!isActive && updateExpenses) {
+            await this.deactivateList(list, user, originalName);
+        }
+
+
+
+        try {
+            await list.save()
+        } catch (error) {
+            throw new InternalServerErrorException();
+        }
+
+        return list;
+    }
+
+    private async deactivateList(list: ShoppingList, user: User, originalName: string) {
+        this.logger.log(`deactivate list called with originalName ${originalName}`)
+        if (list.totalAmount) {
+            const expenses = await this.expensesService.getHouseExpenses(list.houseId, user);
+            const expense = expenses.find(ex => ex.title === `Shopping List - ${originalName}`);
+
+            if (!expense) {
+                await this.expensesService.createExpense({
+                    title: `Shopping List - ${list.name}`,
+                    amount: list.totalAmount,
+                    houseId: list.houseId,
+                    description: 'Shopping List'
+                }, user);
+            } else {
+                await this.expensesService.updateExpense(
+                    expense.id,
+                    {
+                        amount: list.totalAmount,
+                        houseId: list.houseId,
+                        description: 'Shopping List'
+                    },
+                    user
+                )
+            }
+        }
+    }
+
     async removeListItem(itemId: number, listId: number, user: User): Promise<ShoppingList> {
-        // const item = await this.getListItemById(itemId, listId, user);
         const list = await this.getListById(listId, user);
         const itemsNum = list.items.length;
 
