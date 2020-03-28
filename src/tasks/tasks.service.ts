@@ -1,4 +1,4 @@
-import { Injectable, Logger, InternalServerErrorException, NotFoundException, UnauthorizedException, BadRequestException } from '@nestjs/common';
+import { Injectable, Logger, InternalServerErrorException, NotFoundException, UnauthorizedException, BadRequestException, ForbiddenException } from '@nestjs/common';
 import { TaskRepository } from './task.repository';
 import { HouseService } from '../house/house.service';
 import { InjectRepository } from '@nestjs/typeorm';
@@ -8,6 +8,7 @@ import { CreateTaskDto } from './dto/create-task.dto';
 import { House } from 'src/house/house.entity';
 import { TaskStatus } from './task-status.enum';
 import { UpdateTaskDto } from './dto/update-task.dto';
+import { GetTaskFilterDto } from './dto/get-task-filter.dto';
 
 @Injectable()
 export class TasksService {
@@ -33,7 +34,7 @@ export class TasksService {
         return this.taskRepository.createTask(createTaskDto, house, assignToUser, user);
     }
 
-    async getAllHouseTasks(houseId: number, user: User): Promise<Task[]> {
+    async getAllHouseTasks(houseId: number, getTaskFilterDto: GetTaskFilterDto, user: User): Promise<Task[]> {
         this.logger.log(`getAllHouseTasks called with houseId ${houseId} for user ${user.id}`);
 
         const isMember = await this.houseService.isMember(houseId, user, { useId: true });
@@ -42,7 +43,8 @@ export class TasksService {
             throw new NotFoundException();
         }
 
-        return this.taskRepository.find({ houseId });
+        // return this.taskRepository.find({ houseId });
+        return this.taskRepository.getTasks(houseId, getTaskFilterDto, user);
     }
 
     async getTaskById(taskId: number, user: User): Promise<Task> {
@@ -78,7 +80,7 @@ export class TasksService {
         const assignee = await this.houseService.getMember(assigneeId, ['tasks']);
 
         if (!this.houseService.isMember(task.house, assignee)) {
-            this.logger.log(`assignTask: assignee with id ${assignee} is not a member`);
+            this.logger.error(`assignTask: assignee with id ${assignee} is not a member`);
             throw new BadRequestException('Assignee is not a member')
         }
 
@@ -157,7 +159,23 @@ export class TasksService {
         return task;
     }
 
+    async deleteTask(taskId: number, user: User): Promise<void> {
+        this.logger.log(`deleteTask: called with taskId ${taskId} by user with id ${user.id}`);
+        const task = await this.getTaskById(taskId, user);
+        const isAdmin = await this.houseService.isAdmin(task.house, user);
 
+        if (!isAdmin) {
+            this.logger.error(`user is not an admin`);
+            throw new ForbiddenException();
+        }
+
+        const res = await this.taskRepository.delete({id: task.id});
+
+        if (res.affected === 0) {
+            this.logger.error(`error deleting task with id ${taskId}`);
+            throw new InternalServerErrorException();
+        }
+    }
     
 
     public async getHouse(houseId: number, user: User): Promise<House> {

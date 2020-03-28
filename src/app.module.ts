@@ -11,6 +11,6 @@ import { ShoppingListsModule } from './shopping-lists/shopping-lists.module';
 
 @Module({
   imports: [TypeOrmModule.forRoot(typeOrmConfig), AuthModule, HouseModule, UsersModule, TasksModule, ExpensesModule, ShoppingListsModule],
-  
+
 })
-export class AppModule {}
+export class AppModule { }

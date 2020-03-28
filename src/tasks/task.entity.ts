@@ -33,15 +33,11 @@ export class Task extends BaseEntity {
     userId: number;
 
     @Column({
-        type: 'enum',
-        enum: TaskStatus,
         default: TaskStatus.New
     })
     status: TaskStatus;
 
     @Column({
-        type: 'enum',
-        enum: TaskPriority,
         default: TaskPriority.Normal
     })
     priority: TaskPriority;

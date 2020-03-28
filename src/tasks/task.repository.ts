@@ -33,7 +33,7 @@ export class TaskRepository extends Repository<Task> {
             user: assignedUser ? assignedUser : creator,
             description,
             status: assignedUser ? TaskStatus.Assigned : TaskStatus.New,
-            priority: priority ? priority : TaskPriority.Normal
+            priority
         });
 
         try {
@@ -45,9 +45,50 @@ export class TaskRepository extends Repository<Task> {
             throw new InternalServerErrorException();
         }
 
-        this.logger.log(`task with id ${task.id} has been successfully created`);
+        this.logger.log(`task: ${JSON.stringify(task, null, 4)} has been successfully created`);
 
         return task;
+    }
+
+    async getTasks(houseId: number, tasksFilterDto: GetTaskFilterDto, user: User): Promise<Task[]> {
+        this.logger.verbose(`getTasks: called for house ${houseId} with dto ${JSON.stringify(tasksFilterDto, null, 4)}`);
+        const { fromDate, toDate, priority, status, title, userId } = tasksFilterDto;
+        const query = this.createQueryBuilder('task');
+
+        query.andWhere('task."houseId" = :houseId', { houseId });
+
+        if (title) {
+            query.andWhere('task.title LIKE :title', { title: `%${title}` });
+        }
+
+        if (userId) {
+            query.andWhere('task."userId" = :userId', { userId })
+        }
+
+        if (status) {
+            query.andWhere('task.status = :status', { status });
+        }
+
+        if (priority) {
+            query.andWhere('task.priority = :priority', { priority });
+        }
+
+        if (fromDate) {
+            query.andWhere('task.createdAt >= :fromDate', { fromDate });
+        }
+
+        if (toDate) {
+            query.andWhere('task.createdAt <= :toDate', { toDate });
+        }
+        let tasks: Task[];
+        try {
+            tasks = await query.getMany();    
+        } catch (error) {
+            this.logger.error('getTasks: Error', error.message)
+        }
+        
+
+        return tasks;
     }
 
     async updateTask(taskId: number, updateTaskDto: UpdateTaskDto, user: User) {

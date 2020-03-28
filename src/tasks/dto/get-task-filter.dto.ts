@@ -1,5 +1,7 @@
 import { TaskStatus } from "../task-status.enum";
-import { IsOptional, IsEnum, IsNotEmpty } from "class-validator";
+import { IsOptional, IsEnum, IsNotEmpty, IsDate, IsNumber, IsIn } from "class-validator";
+import { TaskPriority } from "../task-priority.enum";
+import { isDate, isNumber } from "util";
 
 export class GetTaskFilterDto {
     @IsOptional()
@@ -7,6 +9,23 @@ export class GetTaskFilterDto {
     status: TaskStatus;
 
     @IsOptional()
+    @IsIn([TaskPriority.Low, TaskPriority.Normal, TaskPriority.High])
+    priority: TaskPriority;
+
+    @IsOptional()
+    // @IsDate()
+    fromDate: Date;
+
+    @IsOptional()
+    // @IsDate()
+    toDate: Date;
+
+    @IsOptional()
     @IsNotEmpty()
-    search: string;
+    title: string;
+
+    @IsOptional()
+    @IsNotEmpty()
+    userId: number;
+
 }

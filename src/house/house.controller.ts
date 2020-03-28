@@ -1,4 +1,4 @@
-import { Controller, UseGuards, Post, Body, Get, Param, ParseIntPipe, Delete, Logger } from '@nestjs/common';
+import { Controller, UseGuards, Post, Body, Get, Param, ParseIntPipe, Delete, Logger, Req } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { HouseService } from './house.service';
 import { CreateHouseDto } from './create-house.dto';
@@ -18,7 +18,7 @@ export class HouseController {
     private logger = new Logger('HouseController', true);
     constructor(
         private houseService: HouseService,
-        
+
     ) { }
 
     @Post()
@@ -37,19 +37,40 @@ export class HouseController {
     }
 
     @Get('/:houseId')
-    getHouseById(@Param('houseId', ParseIntPipe) id: number, @GetUser() user: User): Promise<House> {
+    getHouseById(
+        @Req() req,
+        @Param('houseId', ParseIntPipe) id: number,
+        @GetUser() user: User): Promise<House> {
         this.logger.verbose(`User ${user.id} trying to get house with id ${id}`);
         return this.houseService.getHouseById(id, user);
     }
 
-    @Post('/:houseId/members/:userId')
-    async addMember(
+    @Get('/houseId/members')
+    getHouseMembersAndAdmins(
         @Param('houseId', ParseIntPipe) id: number,
-        @Param('userId', ParseIntPipe) userId: number,
         @GetUser() user: User
     ) {
-        this.logger.verbose(`User ${user.id} is adding user ${userId} to house ${id} as member`);
-        return this.houseService.addMember(id, userId, user);
+        this.logger.verbose(`getHouseMembersAndAdmins called with houseId ${id}`)
+        return this.houseService.getHouseMembersAndAdmins(id, user);
+    }
+
+    // @Post('/:houseId/members/:userId')
+    // async addMember(
+    //     @Param('houseId', ParseIntPipe) id: number,
+    //     @Param('userId', ParseIntPipe) userId: number,
+    //     @GetUser() user: User
+    // ) {
+    //     this.logger.verbose(`User ${user.id} is adding user ${userId} to house ${id} as member`);
+    //     return this.houseService.addMember(id, userId, user);
+    // }
+
+    @Post('/:houseId/members')
+    async addMember(
+        @Param('houseId', ParseIntPipe) houseId: number,
+        @Body('email') email: string,
+        @GetUser() user: User
+    ) {
+        return this.houseService.addMember(houseId, email, user);
     }
 
 
@@ -60,7 +81,7 @@ export class HouseController {
         @GetUser() user: User
     ) {
         this.logger.verbose(`User ${user.id} is removing user ${userId} from house ${id} as member`);
-        return this.houseService.removeMember(id, user,  userId);
+        return this.houseService.removeMember(id, user, userId);
     }
 
     @Post(`/:houseId/admins/:userId`)

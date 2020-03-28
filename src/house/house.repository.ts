@@ -87,12 +87,12 @@ export class HouseRepository extends Repository<House> {
         const house = await this.getHouseById(houseId, user);
 
         if (!this.isMember(house, newAdmin)) {
-            this.logger.log(`newAdmin ${newAdmin.id} is not a member`);
+            this.logger.error(`newAdmin ${newAdmin.id} is not a member`);
             throw new BadRequestException('User must be a member of the house before made admin');
         }
 
         if (this.isAdmin(house, newAdmin)) {
-            this.logger.log(`newAdmin ${newAdmin.id} is already an admin`);
+            this.logger.error(`newAdmin ${newAdmin.id} is already an admin`);
             throw new BadRequestException(`User ${newAdmin.id} is already an admin`)
         }
 

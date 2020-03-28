@@ -8,7 +8,7 @@ export class TaskStatusValidationPipe implements PipeTransform {
         TaskStatus.Completed
     ];
 
-    transform(value: number) {
+    transform(value: any) {
         this.logger.log(`transform called with value ${value}`)
         if (!this.isStatusValid(value)) {
             this.logger.error(`${value} is an invalid status`);
@@ -20,7 +20,7 @@ export class TaskStatusValidationPipe implements PipeTransform {
         return value
     }
 
-    private isStatusValid(status: number) {
+    private isStatusValid(status: any) {
         this.logger.log(`isStatusValid called with status ${status}`);
         return this.allowedStatuses.some(val => val === status);
     }

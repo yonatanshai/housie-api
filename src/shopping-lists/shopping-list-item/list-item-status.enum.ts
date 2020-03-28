@@ -1,5 +1,5 @@
 export enum ListItemStatus {
-    Pending,
-    Accepted,
-    Declined
+    Pending = 'pending',
+    Accepted = 'accepted',
+    Declined = 'declined'
 }

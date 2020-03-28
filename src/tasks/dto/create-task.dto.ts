@@ -18,6 +18,5 @@ export class CreateTaskDto {
     @IsOptional()
     userToAssignId: number;
     
-    @IsOptional()
     priority: TaskPriority
 }

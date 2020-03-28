@@ -7,6 +7,7 @@ import { User } from '../auth/user.entity';
 import { House } from './house.entity';
 // import { UsersService } from 'src/users/users.service';
 import { UsersService } from '../users/users.service';
+import e = require('express');
 
 @Injectable()
 export class HouseService {
@@ -29,12 +30,28 @@ export class HouseService {
 
     async getHouseById(id: number, user: User): Promise<House> {
         return this.houseRepository.getHouseById(id, user);
+
+        
     }
 
-    async addMember(id: number, userId: number, user: User): Promise<House> {
-        const newMember = await this.getMember(userId);
+    async getHouseMembersAndAdmins(id: number, user: User) {
+        const house = await this.houseRepository.getHouseById(id, user);
+        if (!this.isMember(house, user)) {
+            throw new NotFoundException();
+        }
 
-        return this.houseRepository.addMember(id, newMember, user);
+        return {
+            houseId: house.id,
+            houseName: house.name,
+            members: house.members,
+            admins: house.admins
+        }
+    }
+
+    async addMember(houseId: number, email: string, user: User): Promise<House> {
+        const newMember = await this.getMember(null, null, { email });
+
+        return this.houseRepository.addMember(houseId, newMember, user);
     }
 
     async removeMember(id: number, user: User, memberId: number) {
@@ -49,10 +66,15 @@ export class HouseService {
         return this.houseRepository.makeAdmin(id, user, member);
     }
 
-    public async getMember(userId: number, relations?: string[]): Promise<User> {
+    public async getMember(userId: number, relations?: string[], options?: { email: string }): Promise<User> {
         let member;
         try {
-            member = this.usersService.getUserById(userId, relations);
+            if (options?.email) {
+                member = this.usersService.getUserByEmail(options.email);
+            } else {
+                member = this.usersService.getUserById(userId, relations);
+            }
+
         } catch (error) {
             this.logger.error(`Error fetching from db ${error}`, error.stack);
             throw new InternalServerErrorException();
@@ -71,7 +93,7 @@ export class HouseService {
             return this.houseRepository.isMember(houseOrId, user);
         }
 
-        
+
 
         const house = await this.getHouseById(houseOrId, user);
         return this.houseRepository.isMember(house, user);

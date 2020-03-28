@@ -2,12 +2,12 @@ import { Repository, EntityRepository } from "typeorm";
 import { User } from "./user.entity";
 import { AuthCredentialsDto, SigninCredentialsDto } from "./auth-credentials.dto";
 import {DbErrorCode} from '../shared/db-error-codes.enum';
-import { ConflictException, InternalServerErrorException, NotFoundException } from "@nestjs/common";
+import { ConflictException, InternalServerErrorException, NotFoundException, Logger } from "@nestjs/common";
 import * as bcrypt from 'bcryptjs';
 
 @EntityRepository(User)
 export class UserRepository extends Repository<User> {
-
+    private logger = new Logger('UserRepository');
     async getUserById(id: number, relations?: string[]): Promise<User> {
         const user = await this.findOne(id, {relations: ['houses']})
 
@@ -18,7 +18,7 @@ export class UserRepository extends Repository<User> {
         return user;
     }
 
-    async signUp(authCredentialsDto: AuthCredentialsDto): Promise<void> {
+    async signUp(authCredentialsDto: AuthCredentialsDto): Promise<User> {
         const { username, email, password } = authCredentialsDto;
 
         const user = this.create();
@@ -31,14 +31,19 @@ export class UserRepository extends Repository<User> {
         try {
             await user.save();
         } catch (error) {
+            
             switch (error.code) {
                 case DbErrorCode.UNIQUE_COLUMN_VIOLATION:
+                    this.logger.error(`Duplicate user`);
                     throw new ConflictException('A user with this email already exists');
                 default:
                     throw new InternalServerErrorException();
             }
         }
 
+        delete user.password;
+        delete user.email;
+        return user;
     }
 
     async validateUserPassword(signinCredentialsDto: SigninCredentialsDto): Promise<User> {
