@@ -34,7 +34,8 @@ export class TasksService {
         return this.taskRepository.createTask(createTaskDto, house, assignToUser, user);
     }
 
-    async getAllHouseTasks(houseId: number, getTaskFilterDto: GetTaskFilterDto, user: User): Promise<Task[]> {
+    async getAllHouseTasks(getTaskFilterDto: GetTaskFilterDto, user: User): Promise<Task[]> {
+        const {houseId} = getTaskFilterDto;
         this.logger.log(`getAllHouseTasks called with houseId ${houseId} for user ${user.id}`);
 
         const isMember = await this.houseService.isMember(houseId, user, { useId: true });

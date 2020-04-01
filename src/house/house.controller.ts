@@ -69,7 +69,8 @@ export class HouseController {
         @Param('houseId', ParseIntPipe) houseId: number,
         @Body('email') email: string,
         @GetUser() user: User
-    ) {
+    ): Promise<House> {
+        this.logger.log(`addMember: called with houseId ${houseId} and email ${email}`);
         return this.houseService.addMember(houseId, email, user);
     }
 
@@ -79,7 +80,7 @@ export class HouseController {
         @Param('houseId', ParseIntPipe) id: number,
         @Param('userId', ParseIntPipe) userId: number,
         @GetUser() user: User
-    ) {
+    ): Promise<House> {
         this.logger.verbose(`User ${user.id} is removing user ${userId} from house ${id} as member`);
         return this.houseService.removeMember(id, user, userId);
     }

@@ -5,6 +5,7 @@ import { CreateExpenseDto } from "./dto/create-expense.dto";
 import { User } from "src/auth/user.entity";
 import { House } from "src/house/house.entity";
 import { UpdateExpenseDto } from "./dto/update-expense.dto";
+import { ExpenseFilterDto } from "./dto/expense-filter.dto";
 
 @EntityRepository(Expense)
 export class ExpenseRepository extends Repository<Expense> {
@@ -36,6 +37,33 @@ export class ExpenseRepository extends Repository<Expense> {
         this.logger.log(`createExpense: expense with id ${expense.id} created`);
 
         return expense;
+    }
+
+    async getExpenses(expenseFilterDto: ExpenseFilterDto, user: User): Promise<Expense[]> {
+        const { houseId, fromDate, toDate, greaterThan, smallerThan } = expenseFilterDto
+        this.logger.verbose(`getExpenses: called with filters ${JSON.stringify(expenseFilterDto, null, 4)}`)
+        let query = this.createQueryBuilder('expense');
+
+        query.where('expense."houseId" = :houseId', { houseId });
+
+        query.andWhere('expense."createdAt" >= :fromDate', { fromDate });
+        query.andWhere('expense."createdAt" <= :toDate', { toDate });
+        
+        if (greaterThan) {
+            query.andWhere('expense.amount >= :greaterThan', {greaterThan})
+        }
+
+        if (smallerThan) {
+            query.andWhere('expense.amount <= :smallerThan', {smallerThan})
+        }
+
+        const expenses = await query.getMany();
+
+        if (!expenses) {
+            throw new NotFoundException();
+        }
+
+        return expenses;
     }
 
     async getHouseExpenses(house: House, user: User, relations?: string[]): Promise<Expense[]> {
@@ -75,7 +103,7 @@ export class ExpenseRepository extends Repository<Expense> {
 
     async updateExpense(id: number, updateExpenseDto: UpdateExpenseDto, user: User) {
         this.logger.verbose(`updateExpense: called by user with id ${user.id} with dto ${JSON.stringify(updateExpenseDto, null, 4)}`);
-        const {amount, description} = updateExpenseDto;
+        const { amount, description } = updateExpenseDto;
         let expense = await this.getExpenseById(id);
 
         if (amount) {

@@ -6,6 +6,7 @@ import { CreateExpenseDto } from './dto/create-expense.dto';
 import { User } from 'src/auth/user.entity';
 import { Expense } from './expense.entity';
 import { UpdateExpenseDto } from './dto/update-expense.dto';
+import { ExpenseFilterDto } from './dto/expense-filter.dto';
 
 @Injectable()
 export class ExpensesService {
@@ -14,7 +15,7 @@ export class ExpensesService {
         @InjectRepository(ExpenseRepository)
         private expenseRepository: ExpenseRepository,
         private houseService: HouseService
-    ) {}
+    ) { }
 
     async createExpense(createExpenseDto: CreateExpenseDto, user: User): Promise<Expense> {
         const house = await this.houseService.getHouseById(createExpenseDto.houseId, user);
@@ -37,7 +38,15 @@ export class ExpensesService {
 
         return this.expenseRepository.updateExpense(id, updateExpenseDto, user);
     }
+    async getExpenses(expenseFilterDto: ExpenseFilterDto, user: User): Promise<Expense[]> {
+        const house = await this.houseService.getHouseById(expenseFilterDto.houseId, user);
 
+        if (!this.houseService.isAdmin(house, user)) {
+            throw new UnauthorizedException('Only admins can view expenses');
+        }
+
+        return this.expenseRepository.getExpenses(expenseFilterDto, user);
+    }
 
     async getHouseExpenses(houseId: number, user: User): Promise<Expense[]> {
         const house = await this.houseService.getHouseById(houseId, user);
@@ -63,7 +72,7 @@ export class ExpensesService {
 
     async deleteExpense(expenseId: number, user: User): Promise<void> {
         this.logger.verbose(`deleteExpense: called by user with id ${user.id} for expense with id ${expenseId}`);
-        const expense = await this.getExpenseById(expenseId, user); 
+        const expense = await this.getExpenseById(expenseId, user);
 
         let result;
         try {

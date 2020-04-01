@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, InternalServerErrorException, Logger } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, Logger, BadRequestException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HouseRepository } from './house.repository';
 import { CreateHouseDto } from './create-house.dto';
@@ -49,13 +49,39 @@ export class HouseService {
     }
 
     async addMember(houseId: number, email: string, user: User): Promise<House> {
+        this.logger.log(`addMember: called`)
+        
         const newMember = await this.getMember(null, null, { email });
+        const house = await this.getHouseById(houseId, user);
+
+        if (!house) {
+            throw new NotFoundException();
+        }
+
+        if (!newMember) {
+            throw new NotFoundException();
+        }
+
+        if (house.members.some(m => m.id === newMember.id)) {
+            throw new BadRequestException('Already a member');
+        }
+
+        if (newMember.id === user.id) {
+            throw new BadRequestException('Attempt to add self as member');
+        }
+
+        this.logger.log(`found user ${JSON.stringify(newMember, null, 4)}`);
 
         return this.houseRepository.addMember(houseId, newMember, user);
     }
 
-    async removeMember(id: number, user: User, memberId: number) {
+    async removeMember(id: number, user: User, memberId: number): Promise<House> {
+        this.logger.log(`removeMember: called with id ${id} for member with id ${memberId}`);
         const member = await this.getMember(memberId);
+        if (member.id === user.id) {
+            throw new BadRequestException('Attempt to remove self as a member');
+        }
+
         return this.houseRepository.removeMember(id, user, member);
     }
 
@@ -67,12 +93,21 @@ export class HouseService {
     }
 
     public async getMember(userId: number, relations?: string[], options?: { email: string }): Promise<User> {
+        
         let member;
         try {
             if (options?.email) {
                 member = this.usersService.getUserByEmail(options.email);
+                if (!member) {
+                    this.logger.log(`User not found`);
+                    throw new NotFoundException('User not found');
+                }
             } else {
                 member = this.usersService.getUserById(userId, relations);
+                if (!member) {
+                    this.logger.log(`User not found`);
+                    throw new NotFoundException('User not found');
+                }
             }
 
         } catch (error) {
@@ -80,10 +115,7 @@ export class HouseService {
             throw new InternalServerErrorException();
         }
 
-        if (!member) {
-            this.logger.log(`User not found`);
-            throw new NotFoundException('User not found');
-        }
+        
 
         return member;
     }

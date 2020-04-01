@@ -32,14 +32,10 @@ export class Task extends BaseEntity {
     @Column()
     userId: number;
 
-    @Column({
-        default: TaskStatus.New
-    })
+    @Column()
     status: TaskStatus;
 
-    @Column({
-        default: TaskPriority.Normal
-    })
+    @Column()
     priority: TaskPriority;
 
     @CreateDateColumn({type: 'timestamp'})

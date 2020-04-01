@@ -1,4 +1,4 @@
-import { Injectable } from '@nestjs/common';
+import { Injectable, Logger } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { UserRepository } from '../auth/user.repository';
 import { User } from '../auth/user.entity';
@@ -6,9 +6,10 @@ import { QueryBuilder } from 'typeorm';
 
 @Injectable()
 export class UsersService {
+    private logger = new Logger('UsersService');
     constructor(
         @InjectRepository(UserRepository)
-        private userRepository: UserRepository
+        private userRepository: UserRepository,
     ) { }
 
     async getUserById(id: number, relations: string[]): Promise<User> {
@@ -16,6 +17,7 @@ export class UsersService {
     }
 
     async getUserByEmail(email: string): Promise<User> {
+        this.logger.log(`getUserByEmail: called with email ${email}`);
         return this.userRepository.findOne({ email });
     }
 }

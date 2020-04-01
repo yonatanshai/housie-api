@@ -14,14 +14,6 @@ import { GetTaskFilterDto } from './dto/get-task-filter.dto';
 export class TaskRepository extends Repository<Task> {
     private logger = new Logger('TaskRepository');
 
-    // async getTask(filterDto: GetTaskFilterDto, user: User) {
-    //     const { search, status } = filterDto;
-
-    //     const query = this.createQueryBuilder('tasks');
-
-    //     query.where(``)
-    // }
-
     async createTask(createTaskDto: CreateTaskDto, house: House, assignedUser: User, creator: User) {
         const { title, description, priority } = createTaskDto;
         this.logger.verbose(`createTask called with DTO ${JSON.stringify(createTaskDto)}`);
@@ -52,7 +44,7 @@ export class TaskRepository extends Repository<Task> {
 
     async getTasks(houseId: number, tasksFilterDto: GetTaskFilterDto, user: User): Promise<Task[]> {
         this.logger.verbose(`getTasks: called for house ${houseId} with dto ${JSON.stringify(tasksFilterDto, null, 4)}`);
-        const { fromDate, toDate, priority, status, title, userId } = tasksFilterDto;
+        const { fromDate, toDate, priority, openOnly, title, userId } = tasksFilterDto;
         const query = this.createQueryBuilder('task');
 
         query.andWhere('task."houseId" = :houseId', { houseId });
@@ -65,8 +57,12 @@ export class TaskRepository extends Repository<Task> {
             query.andWhere('task."userId" = :userId', { userId })
         }
 
-        if (status) {
-            query.andWhere('task.status = :status', { status });
+        if (openOnly) {
+            query.andWhere('(task.status = :new OR task.status = :assigned OR task.status = :inProgress)', {
+                new: TaskStatus.New,
+                assigned: TaskStatus.Assigned,
+                inProgress: TaskStatus.InProgress
+            });
         }
 
         if (priority) {
@@ -74,19 +70,24 @@ export class TaskRepository extends Repository<Task> {
         }
 
         if (fromDate) {
-            query.andWhere('task.createdAt >= :fromDate', { fromDate });
+            query.andWhere('task."createdAt" >= :fromDate', { fromDate });
         }
 
         if (toDate) {
-            query.andWhere('task.createdAt <= :toDate', { toDate });
+            query.andWhere('task."createdAt" <= :toDate', { toDate });
         }
+        this.logger.log(query.getSql())
+        
         let tasks: Task[];
         try {
-            tasks = await query.getMany();    
+            const res = await query.getManyAndCount();
+            tasks = res[0];
+            this.logger.log(`getTasks: fetched ${res[1]}`)
+
         } catch (error) {
             this.logger.error('getTasks: Error', error.message)
         }
-        
+
 
         return tasks;
     }

@@ -23,17 +23,18 @@ export class TasksController {
         private tasksService: TasksService
     ) { }
 
-    @Get('/houses/:houseId')
+    @Get('/')
     async getAllHouseTasks(
-        @Param('houseId') houseId: number,
         @Query(ValidationPipe) getTaskFilterDto: GetTaskFilterDto,
         @GetUser() user: User
     ): Promise<Task[]> {
-        return this.tasksService.getAllHouseTasks(houseId, getTaskFilterDto, user);
+        this.logger.verbose(`getAllHouseTasks: called`);
+        return this.tasksService.getAllHouseTasks(getTaskFilterDto, user);
     }
 
     @Get('/:taskId')
-    async getHouseById(@Param('taskId') taskId: number, @GetUser() user: User): Promise<Task> {
+    async getTaskById(@Param('taskId') taskId: number, @GetUser() user: User): Promise<Task> {
+        this.logger.verbose('getTaskById: called')
         return this.tasksService.getTaskById(taskId, user);
     }
 
@@ -67,6 +68,7 @@ export class TasksController {
         @Body('status', TaskStatusValidationPipe) status: TaskStatus,
         @GetUser() user: User
     ): Promise<Task> {
+        this.logger.verbose(`updateTaskStatus: called`);
         return this.tasksService.updateTaskStatus(taskId, status, user);
     }
 
