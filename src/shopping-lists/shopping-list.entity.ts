@@ -16,13 +16,13 @@ export class ShoppingList extends BaseEntity {
     @Column()
     houseId: number;
 
-    @Column({ default: true })
+    @Column()
     isActive: boolean;
 
     @Column()
     creatorId: number;
 
-    @OneToMany(type => ShoppingListItem, item => item.list)
+    @OneToMany(type => ShoppingListItem, item => item.list, {eager: true})
     items: ShoppingListItem[];
 
     @Column({

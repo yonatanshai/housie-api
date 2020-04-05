@@ -1,9 +1,16 @@
-import { IsBoolean, IsPositive } from "class-validator";
+import { IsBoolean, IsPositive, IsNotEmpty, IsOptional } from "class-validator";
 
 export class GetListFilterDto {
-    @IsBoolean()
+    @IsNotEmpty()
+    houseId: number;
+
+    // if true then only active lists
+    @IsNotEmpty()
     isActive: boolean;
 
-    @IsPositive()
-    houseId: number;
+    @IsNotEmpty()
+    fromDate: Date;
+
+    @IsNotEmpty()
+    toDate: Date;
 }

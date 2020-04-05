@@ -1,4 +1,4 @@
-import { Injectable, UnauthorizedException, NotImplementedException, InternalServerErrorException, NotFoundException, Logger } from '@nestjs/common';
+import { Injectable, UnauthorizedException, NotImplementedException, InternalServerErrorException, NotFoundException, Logger, ForbiddenException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { ShoppingListRepository } from './shopping-list.repository';
 import { ShoppingListItemRepository } from './shopping-list-item/shopping-list-item.repository';
@@ -36,7 +36,8 @@ export class ShoppingListsService {
     }
 
     async getLists(getListFilterDto: GetListFilterDto, user): Promise<ShoppingList[]> {
-        if (!this.houseService.isMember(getListFilterDto.houseId, user, { useId: true })) {
+        const isMember = await this.houseService.isMember(getListFilterDto.houseId, user, { useId: true })
+        if (!isMember) {
             throw new NotFoundException();
         }
 
@@ -101,11 +102,15 @@ export class ShoppingListsService {
     }
 
     async updateListItem(updateShoppingListItemDto: UpdateShoppingListItemDto, itemId: number, listId: number, user: User): Promise<ShoppingListItem> {
-        const { name } = updateShoppingListItemDto;
+        const { name, checked } = updateShoppingListItemDto;
         const item = await this.getListItemById(itemId, listId, user);
-
+        this.logger.log(`updateListItem: called with ${JSON.stringify(updateShoppingListItemDto, null, 4)}`)
         if (name) {
             item.name = name;
+        }
+
+        if (checked !== null) {
+            item.checked = checked;
         }
 
         try {
@@ -175,6 +180,22 @@ export class ShoppingListsService {
                     user
                 )
             }
+        }
+    }
+
+    async deleteList(listId: number, user: User): Promise<void> {
+        const list = await this.getListById(listId, user);
+
+        const isAdmin = await this.houseService.isAdmin(list.house, user);
+
+        if (!isAdmin) {
+            throw new ForbiddenException();
+        }
+
+        const result = await this.shoppingListRepository.delete(list.id);
+
+        if (result.affected === 0) {
+            throw new InternalServerErrorException('Delete failed');
         }
     }
 

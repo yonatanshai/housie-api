@@ -40,8 +40,8 @@ export class ExpensesService {
     }
     async getExpenses(expenseFilterDto: ExpenseFilterDto, user: User): Promise<Expense[]> {
         const house = await this.houseService.getHouseById(expenseFilterDto.houseId, user);
-
-        if (!this.houseService.isAdmin(house, user)) {
+        const isAdmin = await this.houseService.isAdmin(house, user);
+        if (!isAdmin) {
             throw new UnauthorizedException('Only admins can view expenses');
         }
 

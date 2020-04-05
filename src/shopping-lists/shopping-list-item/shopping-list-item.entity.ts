@@ -27,6 +27,9 @@ export class ShoppingListItem extends BaseEntity {
     @Column()
     listId: number;
 
+    @Column()
+    checked: boolean;
+
     @CreateDateColumn()
     createdAt: Date;
 

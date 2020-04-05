@@ -1,9 +1,10 @@
-import { EntityRepository, Repository } from "typeorm";
+import { EntityRepository, Repository, MoreThan, LessThan, LessThanOrEqual, MoreThanOrEqual, Between, Raw, In } from "typeorm";
 import { ShoppingList } from "./shopping-list.entity";
 import { Logger, InternalServerErrorException, NotFoundException } from "@nestjs/common";
 import { CreateListDto } from "./dto/create-list.dto";
 import { User } from "src/auth/user.entity";
 import { GetListFilterDto } from "./dto/get-list-filter.dto";
+import { raw } from "express";
 
 @EntityRepository(ShoppingList)
 export class ShoppingListRepository extends Repository<ShoppingList> {
@@ -19,6 +20,7 @@ export class ShoppingListRepository extends Repository<ShoppingList> {
         list.houseId = houseId;
         list.items = [];
         list.name = name;
+        list.isActive = true;
         list.creatorId = user.id;
 
         try {
@@ -34,22 +36,27 @@ export class ShoppingListRepository extends Repository<ShoppingList> {
     }
 
     async getList(getListFilterDto: GetListFilterDto): Promise<ShoppingList[]> {
-        const { isActive, houseId } = getListFilterDto;
-
+        this.logger.verbose(`getList: called with ${JSON.stringify(getListFilterDto, null, 4)}`);
+        const { isActive, houseId, fromDate, toDate } = getListFilterDto;
+        
         let lists: ShoppingList[];
         try {
             lists = await this.find({
-                houseId,
-                isActive,
+                where: {
+                    houseId,
+                    isActive: isActive.toString() === 'true' ? true : In([true, false]),
+                    createdAt: Between(fromDate, toDate)
+                },
             });    
         } catch (error) {
+            this.logger.error('getList: error', error.stack)
             throw new InternalServerErrorException();
         }
 
         if (!lists) {
             throw new NotFoundException();
         }
-
+        this.logger.verbose(`lists: ${JSON.stringify(lists, null, 4)}`)
         return lists;
     }
 }

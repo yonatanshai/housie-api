@@ -16,6 +16,7 @@ export class ShoppingListItemRepository extends Repository<ShoppingListItem> {
         listItem.name = name;
         listItem.list = shoppingList;
         listItem.creatorId = user.id;
+        listItem.checked = false;
         listItem.status = ListItemStatus.Accepted;
         
         try {

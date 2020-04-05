@@ -23,8 +23,10 @@ export class TasksService {
         this.logger.verbose(`createTask called with DTO ${JSON.stringify(createTaskDto)} by user ${user.id}`);
 
         const house = await this.getHouse(createTaskDto.houseId, user);
+        const isAdmin = await this.houseService.isAdmin(house, user);
+        this.logger.log(`createTask: isAdmin ${isAdmin}`);
 
-        if (!this.houseService.isAdmin(house, user, { useId: false })) {
+        if (!isAdmin) {
             this.logger.log(`Attempt to create a task from a non admin user with id ${user.id}`);
             throw new UnauthorizedException('Only admins can create tasks');
         }
@@ -80,12 +82,12 @@ export class TasksService {
         const task = await this.getTaskById(taskId, user);
         const assignee = await this.houseService.getMember(assigneeId, ['tasks']);
 
-        if (!this.houseService.isMember(task.house, assignee)) {
+        if (await !this.houseService.isMember(task.house, assignee)) {
             this.logger.error(`assignTask: assignee with id ${assignee} is not a member`);
             throw new BadRequestException('Assignee is not a member')
         }
 
-        if (!this.houseService.isAdmin(task.house, user)) {
+        if (await !this.houseService.isAdmin(task.house, user)) {
             this.logger.log(`assignTask: user with id ${user.id} is not an admin`);
             throw new UnauthorizedException();
         }
@@ -165,7 +167,7 @@ export class TasksService {
         const task = await this.getTaskById(taskId, user);
         const isAdmin = await this.houseService.isAdmin(task.house, user);
 
-        if (!isAdmin) {
+        if (await !isAdmin) {
             this.logger.error(`user is not an admin`);
             throw new ForbiddenException();
         }
