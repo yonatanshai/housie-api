@@ -123,6 +123,7 @@ export class ShoppingListsService {
     }
 
     async updateList(listId: number, updateListDto: UpdateListDto, user: User) {
+        this.logger.verbose(`updateList: called for list ${listId} with ${JSON.stringify(updateListDto, null, 4)}`)
         const { isActive, name, updateExpenses, totalAmount } = updateListDto;
         const list = await this.getListById(listId, user);
         const originalName = list.name;
@@ -144,8 +145,6 @@ export class ShoppingListsService {
         if (!isActive && updateExpenses) {
             await this.deactivateList(list, user, originalName);
         }
-
-
 
         try {
             await list.save()

@@ -19,14 +19,12 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     }
 
     async validate(payload: JwtPayload) {
-        this.logger.log(`validate called with payload ${JSON.stringify(payload)}`);
-        
+        this.logger.log(`validate called with payload ${JSON.stringify(payload, null, 4)}`);
         const user = await this.userRepository.findOne(payload.id, {relations: ['houses', 'tasks']});
         
         if (!user) {
             throw new UnauthorizedException();
         }
-
         return user;
     }
 }

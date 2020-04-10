@@ -17,7 +17,6 @@ export class AuthService {
 
     async signUp(authCredentialsDto: AuthCredentialsDto): Promise<{ user: User, token: string }> {
         const user = await this.userRepository.signUp(authCredentialsDto);
-
         const token = await this.generateAccessToken(user);
 
         return { user, token }
@@ -26,7 +25,7 @@ export class AuthService {
     async signIn(signInCredentialsDto: SigninCredentialsDto): Promise<{ user: User, token: string }> {
         this.logger.verbose(`signIn attempt with ${JSON.stringify(signInCredentialsDto, null, 4)}`)
         const user = await this.userRepository.validateUserPassword(signInCredentialsDto);
-
+        this.logger.log(`signIn: user=${JSON.stringify(user,null,4)}`)
         if (!user) {
             throw new UnauthorizedException('Invalid password or username');
         }

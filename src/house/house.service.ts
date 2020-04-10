@@ -1,4 +1,4 @@
-import { Injectable, NotFoundException, InternalServerErrorException, Logger, BadRequestException } from '@nestjs/common';
+import { Injectable, NotFoundException, InternalServerErrorException, Logger, BadRequestException, ForbiddenException, UnauthorizedException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { HouseRepository } from './house.repository';
 import { CreateHouseDto } from './create-house.dto';
@@ -32,6 +32,21 @@ export class HouseService {
         return this.houseRepository.getHouseById(id, user);
 
         
+    }
+
+    async deleteHouse(houseId: number, user: User): Promise<void> {
+        this.logger.verbose(`deleteHouse: called with houseId ${houseId} by user ${user.id}`);
+        const isAdmin = await this.isAdmin(houseId, user, {useId: true});
+
+        if (!isAdmin) {
+            throw new ForbiddenException('Only admins can delete houses');
+        }
+
+        const result = await this.houseRepository.delete(houseId);
+
+        if (result.affected === 0) {
+            throw new InternalServerErrorException('Delete failed');
+        }
     }
 
     async getHouseMembersAndAdmins(id: number, user: User) {
@@ -82,7 +97,23 @@ export class HouseService {
             throw new BadRequestException('Attempt to remove self as a member');
         }
 
+        if (!await this.isAdmin(id, user, {useId: true})) {
+            throw new ForbiddenException('Only admins can remove users');
+        }
+
         return this.houseRepository.removeMember(id, user, member);
+    }
+
+    async removeMe(houseId: number, user: User): Promise<House> {
+        this.logger.verbose(`removeMe: called with house ${houseId} by user ${user.id}`);
+
+        const house = await this.getHouseById(houseId, user);
+
+        if (!house.admins.some(a => a.id === user.id) || house.admins.length > 1) {
+            return this.houseRepository.removeMember(houseId, user, user);
+        } else {
+            throw new ForbiddenException('A house needs at least one admin');
+        }
     }
 
     async makeAdmin(id: number, user: User, newAdminId: number) {

@@ -74,6 +74,21 @@ export class HouseController {
         return this.houseService.addMember(houseId, email, user);
     }
 
+    @Delete('/:houseId')
+    async deleteHouse(
+        @Param('houseId', ParseIntPipe) houseId: number,
+        @GetUser() user: User
+    ): Promise<void> {
+        return this.houseService.deleteHouse(houseId, user);
+    }
+
+    @Delete('/:houseId/me')
+    async removeMe(
+        @Param('houseId', ParseIntPipe) houseId: number,
+        @GetUser() user: User
+    ): Promise<House> {
+        return this.houseService.removeMe(houseId, user);
+    }
 
     @Delete('/:houseId/members/:userId')
     async removeMember(

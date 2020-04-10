@@ -21,7 +21,7 @@ export class ShoppingListItem extends BaseEntity {
     })
     status: ListItemStatus;
 
-    @ManyToOne(type => ShoppingList, list => list.items)
+    @ManyToOne(type => ShoppingList, list => list.items, {onDelete: "CASCADE"})
     list: ShoppingList;
 
     @Column()

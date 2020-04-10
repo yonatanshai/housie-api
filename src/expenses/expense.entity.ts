@@ -16,7 +16,7 @@ export class Expense extends BaseEntity {
     @Column({type: "float"})
     amount: number;
 
-    @ManyToOne(type => User, user => user.expenses)
+    @ManyToOne(type => User, user => user.expenses, {onDelete: "CASCADE"})
     creator: User;
 
     @Column()
@@ -28,7 +28,7 @@ export class Expense extends BaseEntity {
     @UpdateDateColumn()
     updatedAt: Date;
 
-    @ManyToOne(type => House, house => house.expenses)
+    @ManyToOne(type => House, house => house.expenses,  {onDelete: "CASCADE"})
     house: House;
 
     @Column()

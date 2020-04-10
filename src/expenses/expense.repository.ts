@@ -76,10 +76,10 @@ export class ExpenseRepository extends Repository<Expense> {
             throw new InternalServerErrorException();
         }
 
-        if (expenses.length === 0) {
-            this.logger.error(`expenses for house ${house.id} not found`);
-            throw new NotFoundException();
-        }
+        // if (expenses.length === 0) {
+        //     this.logger.error(`expenses for house ${house.id} not found`);
+        //     throw new NotFoundException();
+        // }
 
         return expenses;
     }

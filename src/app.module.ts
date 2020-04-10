@@ -7,10 +7,11 @@ import { UsersModule } from './users/users.module';
 import { TasksModule } from './tasks/tasks.module';
 import { ExpensesModule } from './expenses/expenses.module';
 import { ShoppingListsModule } from './shopping-lists/shopping-lists.module';
+import { ChatModule } from './chat/chat.module';
 
 
 @Module({
-  imports: [TypeOrmModule.forRoot(typeOrmConfig), AuthModule, HouseModule, UsersModule, TasksModule, ExpensesModule, ShoppingListsModule],
+  imports: [TypeOrmModule.forRoot(typeOrmConfig), AuthModule, HouseModule, UsersModule, TasksModule, ExpensesModule, ShoppingListsModule, ChatModule],
 
 })
 export class AppModule { }

@@ -75,19 +75,26 @@ export class TasksService {
     }
 
     async updateTask(taskId: number, updateTaskDto: UpdateTaskDto, user: User) {
+        const {assignedUserId} = updateTaskDto;
+        if (assignedUserId) {
+            await this.assignTask(taskId, user, assignedUserId);
+        }
         return this.taskRepository.updateTask(taskId, updateTaskDto, user);
     }
 
     async assignTask(taskId: number, user: User, assigneeId: number): Promise<Task> {
+        this.logger.verbose(`assignTask: called. taskId = ${taskId} assigneeId ${assigneeId}`)
         const task = await this.getTaskById(taskId, user);
         const assignee = await this.houseService.getMember(assigneeId, ['tasks']);
 
-        if (await !this.houseService.isMember(task.house, assignee)) {
+        this.logger.log(`assignTask: assignee found = ${JSON.stringify(assignee, null, 4)}`);
+        
+        if (!await this.houseService.isMember(task.house, assignee)) {
             this.logger.error(`assignTask: assignee with id ${assignee} is not a member`);
             throw new BadRequestException('Assignee is not a member')
         }
 
-        if (await !this.houseService.isAdmin(task.house, user)) {
+        if (!await this.houseService.isAdmin(task.house, user)) {
             this.logger.log(`assignTask: user with id ${user.id} is not an admin`);
             throw new UnauthorizedException();
         }

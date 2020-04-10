@@ -10,7 +10,7 @@ export class ShoppingList extends BaseEntity {
     @Column()
     name: string;
 
-    @ManyToOne(type => House, house => house.shoppingLists)
+    @ManyToOne(type => House, house => house.shoppingLists, {onDelete: "CASCADE"})
     house: House;
 
     @Column()

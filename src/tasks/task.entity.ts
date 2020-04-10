@@ -17,7 +17,7 @@ export class Task extends BaseEntity {
     @IsOptional()
     description: string;
 
-    @ManyToOne(type => House, house => house.tasks)
+    @ManyToOne(type => House, house => house.tasks, {onDelete: "CASCADE"})
     house: House;
 
     @Column()
@@ -26,7 +26,7 @@ export class Task extends BaseEntity {
     @Column()
     creator: number;
 
-    @ManyToOne(type => User, user => user.tasks)
+    @ManyToOne(type => User, user => user.tasks, {onDelete: "CASCADE"})
     user: User;
 
     @Column()

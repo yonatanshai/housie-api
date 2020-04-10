@@ -50,7 +50,7 @@ export class TasksController {
         @Param('taskId', ParseIntPipe) taskId: number,
         @Body(ValidationPipe) updateTaskDto: UpdateTaskDto,
         @GetUser() user: User
-    ) {
+    ): Promise<Task> {
         return this.tasksService.updateTask(taskId, updateTaskDto, user);
     }
 

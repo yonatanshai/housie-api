@@ -31,7 +31,7 @@ export class HouseRepository extends Repository<House> {
 
     async getHouseById(id: number, user: User): Promise<House> {
         this.logger.log(`getHouseById called by user ${user.id} for house ${id}`);
-        
+
         let house: House;
         try {
             house = await this.findOne({ id });
@@ -39,7 +39,7 @@ export class HouseRepository extends Repository<House> {
             this.logger.error(`Error retrieving house from db ${error}`, error.stack);
             throw new InternalServerErrorException();
         }
-        
+
         if (!house) {
             this.logger.log('House not found')
             throw new NotFoundException();
@@ -57,7 +57,7 @@ export class HouseRepository extends Repository<House> {
         this.logger.verbose(`User ${user.id} is adding user ${newMember.id} to house ${houseId} as member`);
 
         const house = await this.getHouseById(houseId, user);
-        
+
         if (!this.isAdmin(house, user)) {
             throw new UnauthorizedException('Only admins can add new members');
         }
@@ -73,11 +73,10 @@ export class HouseRepository extends Repository<House> {
 
         const house = await this.getHouseById(houseId, user);
 
-        if (this.isAdmin(house, user)) {
-            house.members = house.members.filter(m => m.id !== member.id);
-            await this.saveHouse(house);
-        }
-        
+        house.members = house.members.filter(m => m.id !== member.id);
+        house.admins = house.admins.filter(a => a.id !== member.id);
+        await this.saveHouse(house);
+
         return house;
     }
 
@@ -104,7 +103,7 @@ export class HouseRepository extends Repository<House> {
         house.admins.push(newAdmin);
 
         await this.saveHouse(house);
-        
+
         this.logger.log('House updated');
         return house;
     }
@@ -121,14 +120,14 @@ export class HouseRepository extends Repository<House> {
         return result;
     }
 
-    
+
 
     private async saveHouse(house: House): Promise<void> {
         try {
-            await house.save();    
+            await house.save();
         } catch (error) {
             this.logger.error(`Error updating house in db ${error}`, error.stack);
-            throw new InternalServerErrorException(); 
+            throw new InternalServerErrorException();
         }
     }
 }
