@@ -1,0 +1,7 @@
+db:
+  host: 'localhost'
+  username: 'postgres'
+  password: 'ys250911!'
+
+jwt:
+  secret: 'sdhjk234dsfmn342dkfsjhf3242kjfdhs33$#@4'

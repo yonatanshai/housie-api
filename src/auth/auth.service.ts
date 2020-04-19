@@ -44,6 +44,7 @@ export class AuthService {
             username: user.username,
             email: user.email,
             id: user.id,
+            currency: user.currency
         }
 
         const token = await this.jwtService.sign(payload);

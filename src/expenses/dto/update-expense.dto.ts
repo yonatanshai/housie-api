@@ -10,4 +10,8 @@ export class UpdateExpenseDto {
     @IsOptional()
     @IsPositive()
     amount: number;
+
+    @IsOptional()
+    @IsNotEmpty()
+    title: string;
 }

@@ -46,7 +46,7 @@ export class ExpensesController {
         @Param('id') id: number,
         @Body(ValidationPipe) updateExpenseDto: UpdateExpenseDto,
         @GetUser() user: User
-    ) {
+    ): Promise<Expense> {
         return this.expenseService.updateExpense(id, updateExpenseDto, user);
     }
 

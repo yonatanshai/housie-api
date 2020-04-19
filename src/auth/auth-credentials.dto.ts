@@ -12,6 +12,8 @@ export class AuthCredentialsDto {
 
     @MinLength(8)
     password: string;
+
+    currency: number;
 }
 
 export class SigninCredentialsDto {

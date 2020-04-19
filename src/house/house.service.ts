@@ -8,6 +8,7 @@ import { House } from './house.entity';
 // import { UsersService } from 'src/users/users.service';
 import { UsersService } from '../users/users.service';
 import e = require('express');
+const sgMail = require('@sendgrid/mail');
 
 @Injectable()
 export class HouseService {
@@ -17,6 +18,24 @@ export class HouseService {
         private houseRepository: HouseRepository,
         private usersService: UsersService
     ) { }
+
+    async inviteUser(email: string, user: User): Promise<void> {
+        sgMail.setApiKey(process.env.SENDGRID_API_KEY);
+        this.logger.log(`inviteUser: apiKey=${process.env.SENDGRID_API_KEY}`)
+        const msg ={
+            to: email,
+            from: 'housie@dev.com',
+            subject: 'invitation',
+            text: `You were invited by ${user.username} to use Housie App!`,
+            html: '<a href="http://localhost:3000">Click here to join!</a>'
+        };
+        try {
+            await sgMail.send(msg);
+        } catch (error) {
+            this.logger.error('inviteUser: error', error.stack);
+            throw new ForbiddenException()
+        }
+    }
 
     async createHouse(createHouseDto: CreateHouseDto, user: User): Promise<House> {
         return this.houseRepository.createHouse(createHouseDto, user);

@@ -174,6 +174,7 @@ export class ShoppingListsService {
                     {
                         amount: list.totalAmount,
                         houseId: list.houseId,
+                        title: `Shopping List - ${list.name}`,
                         description: 'Shopping List'
                     },
                     user

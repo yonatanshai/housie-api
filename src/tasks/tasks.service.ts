@@ -75,6 +75,7 @@ export class TasksService {
     }
 
     async updateTask(taskId: number, updateTaskDto: UpdateTaskDto, user: User) {
+        this.logger.verbose(`updateTask: called with ${JSON.stringify(updateTaskDto, null, 4)}`)
         const {assignedUserId} = updateTaskDto;
         if (assignedUserId) {
             await this.assignTask(taskId, user, assignedUserId);

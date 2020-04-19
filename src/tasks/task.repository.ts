@@ -22,7 +22,7 @@ export class TaskRepository extends Repository<Task> {
             title,
             creator: creator.id,
             house,
-            user: assignedUser ? assignedUser : creator,
+            user: assignedUser ? assignedUser : null,
             description,
             status: assignedUser ? TaskStatus.Assigned : TaskStatus.New,
             priority

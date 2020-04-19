@@ -7,7 +7,7 @@ import { Expense } from "src/expenses/expense.entity";
 @Entity()
 @Unique(['email'])
 export class User extends BaseEntity {
-    @PrimaryGeneratedColumn()
+    @PrimaryGeneratedColumn('uuid')
     id: number;
 
     @Column()
@@ -18,6 +18,9 @@ export class User extends BaseEntity {
 
     @Column({ select: false })
     password: string;
+
+    @Column()
+    currency: number;
 
     @ManyToMany(type => House, house => house.members, { eager: false })
     houses: House[]

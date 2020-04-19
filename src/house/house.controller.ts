@@ -74,6 +74,14 @@ export class HouseController {
         return this.houseService.addMember(houseId, email, user);
     }
 
+    @Post('/invite-user')
+    inviteUser(
+        @Body('email') email: string,
+        @GetUser() user: User
+    ): Promise<void> {
+        return this.houseService.inviteUser(email, user);
+    }
+
     @Delete('/:houseId')
     async deleteHouse(
         @Param('houseId', ParseIntPipe) houseId: number,
